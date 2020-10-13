@@ -6,12 +6,12 @@ import java.util.Random;
 public class CipherInfoService {
 
     private static final char[] ALPHABET = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0'};
-    private static final int KEY_LENGTH = 16; // or 32 ??
+    private static final int KEY_LENGTH = 16;
 
     private int rsaE;
     private int rsaN;
     private String sessionKey;
-    private String encryptedSessionKey;
+    private static String encryptedSessionKey;
     private byte[] encryptedSessionKeyBytes;
     private LocalDateTime keyCreatedTime;
 
@@ -51,15 +51,15 @@ public class CipherInfoService {
         this.sessionKey = sessionKey;
     }
 
-    public String getEncryptedSessionKey() {
+    public static String getEncryptedSessionKey() {
         return encryptedSessionKey;
-    }
-
-    public void setEncryptedSessionKey(String encryptedSessionKey) {
-        this.encryptedSessionKey = encryptedSessionKey;
     }
 
     public LocalDateTime getKeyCreatedTime() {
         return keyCreatedTime;
+    }
+
+    public static int getKeyLength() {
+        return KEY_LENGTH;
     }
 }
