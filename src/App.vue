@@ -5,6 +5,7 @@
         <FileView v-bind:filename="filename"
                   v-bind:text="decodedText"
                   v-if="isEncoded"
+                  class="mb-2"
         />
         <br>
         <Loader v-if="isLoading"/>

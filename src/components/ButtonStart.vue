@@ -36,6 +36,10 @@
                 //     })
                 //
 
+                console.log("RSA keypair: ", keypair)
+
+              console.log(keypair.privateKey.n.data.join(""))
+
                 //stub
                 setTimeout(() => this.isLoad = false, 0)
                 this.$emit('startSession', keypair.privateKey, '416CE8458A0C3DBE0683A52CB8F7E9FE')
