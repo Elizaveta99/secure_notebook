@@ -40,7 +40,7 @@
                 this.privateKey = privateKey
                 this.sessionKey = sessionKey
             },
-            encodeText(filename, initializedVector, encodedText) {
+            encodeText(filename, initializedVector = '0000000000000000', encodedText) {
                 setTimeout(this.isLoading = true, 0)
                 this.filename = filename
                 const decipher = forge.cipher.createDecipher('AES-CFB', this.sessionKey);

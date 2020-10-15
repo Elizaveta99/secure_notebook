@@ -1,8 +1,16 @@
-
+function isPrime(n, k=100) {
+    return true
+}
 
 function generatePrime(bits = 1024) {
     //check - isPrime?
-    return getRandomBigIng(bits)
+    let primeBigInt
+    let isPrimeBoolean = false
+    while (!isPrimeBoolean) {
+        primeBigInt = getRandomBigInt(bits)
+        isPrimeBoolean = isPrime(primeBigInt, k=10)
+    }
+    return primeBigInt
 }
 
 
@@ -11,7 +19,7 @@ function getRandomInt(max) {
 }
 
 
-function getRandomBigIng(bits) {
+function getRandomBigInt(bits = 1024) {
     let bigInt = 0n
     let cycles = Math.floor(bits / 32)
     while (--cycles) {
@@ -55,10 +63,11 @@ function extendedAlgorithmEuclidBigInt(e, L) {
 }
 
 
-export function generateRsaKeyPair(bits = 1024, e = 65537n) {
+function generateRsaKeyPair(bits = 1024, e = 65537n) {
     let p = 1n, q = 1n
-    p = generateWithCondition(p, e, bits)
-    q = generateWithCondition(q, e, bits)
+    //console.log('00 F9 95 80 5A E6 FD 12 52 C3 5D 2D 0E 14 5F 04 E4 6C F6 F2 99 5B 57 DA C9 EC CA 0F B5 34 46 43 71 24 29 2C 9F 7E DC CA E3 A0 F3 32 37 04 D1 D2 FF FC E9 76 A7 FA 0C 6D FF 14 7F A2 47 D7 96 00 0F '.split(' ').join(''))
+    p = generatePrime() // BigInt('10089492364999512835528429168273061510287964919442299334768281502367854564710584724649660742971582377959348319842916472073757800913736762843723817350561391')//generateWithCondition(p, e, bits)
+    q = generatePrime() //BigInt('13071774209124879114739371138051483271182095049775000070504380743054194773449051729532086204556431401764732513058022331121386757945185678811876726461038607')//generateWithCondition(q, e, bits)
     const L = (p - 1n) * (q - 1n)
     let d = extendedAlgorithmEuclidBigInt(e, L)[2]
     d = d >= 0n ? d : L + d
@@ -75,4 +84,10 @@ export function generateRsaKeyPair(bits = 1024, e = 65537n) {
         N: privateKey.N,
     }
     return {publicKey, privateKey}
+}
+
+function powToMod(base, power, module) {
+    if(power === 1n) return base;
+    if(power % 2n === 0n) return powToMod(base, power / 2n, module) ** 2n % module;
+    return powToMod(base, power - 1n, module) * base % module;
 }
