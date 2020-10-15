@@ -5,13 +5,14 @@ import org.springframework.web.bind.annotation.*;
 import service.AESService;
 import service.CipherInfoService;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 @RestController
 @RequestMapping("/server")
 public class ServerController {
 
-    private static int expirationTme = 45; // seconds ??
+    private static int expirationTme = 45;
     private static final String SUCCESS_STATUS = "success";
     private static final String ERROR_STATUS = "error";
     private static final String EMPTY_ANSWER = "";
@@ -22,7 +23,7 @@ public class ServerController {
     private CipherInfoService cipherInfoService = new CipherInfoService();
     private AESService aesService = new AESService();
 
-    //@GetMapping("/getOpenRsaKey")
+    //http://localhost:8080/server/openSession?rsaE=7&rsaN=3
     @GetMapping("/openSession")
     public void getOpenRsaKey (@RequestParam(value = "rsaE") String rsaE,
                                @RequestParam(value = "rsaN") String rsaN) {
@@ -30,23 +31,20 @@ public class ServerController {
         cipherInfoService.setRsaN(Integer.parseInt(rsaN));
     }
 
-    @PostMapping(value = "/createSessionKey", produces = "application/json")
-    public BaseResponse createSessionKey() {
+    //http://localhost:8080/server/createSessionKey
+    //answer - {"status":"success","code":200,"content":"L9DOBLZ8M739T3C1"}
+    @GetMapping(value = "/createSessionKey", produces = "application/json")
+    public BaseResponse createSessionKey() throws UnsupportedEncodingException {
         cipherInfoService.createSessionKey();
         return new BaseResponse(SUCCESS_STATUS, CODE_SUCCESS, cipherInfoService.getSessionKey());
     }
 
-    //@PostMapping(value = "/encryptFile", consumes = "application/json", produces = "application/json")
-    @PostMapping(value = "/file", produces = "application/json")
-    public BaseResponse encryptFile(@RequestParam(value = "name") String fileName) {
-    //@PostMapping(value = "/file", consumes = "application/json", produces = "application/json")
-    //public BaseResponse encryptFile(@RequestBody String fileName) {
-        if (LocalDateTime.now().minusSeconds(expirationTme).isAfter(cipherInfoService.getKeyCreatedTime())) {
-            return new BaseResponse(ERROR_STATUS, KEY_EXPIRED, EMPTY_ANSWER);
-        }
+    //http://localhost:8080/server/file?name=testFile1.txt
+    //answer - {"status":"success","code":200,"content":"��-\u000F$�������v�x~��������\u0014\u0017�\fA�\u0016"}
+    @GetMapping(value = "/file", produces = "application/json")
+    public BaseResponse encryptFile(@RequestParam(value = "name") String fileName) throws IOException {
         String encryptedFile = "";
-        // запуск encrypt из класса AESService
-        encryptedFile = aesService.cipherAES(fileName);
+        encryptedFile = aesService.cipherAES(fileName, cipherInfoService.getEncryptedSessionKey());
         return new BaseResponse(SUCCESS_STATUS, CODE_SUCCESS, encryptedFile);
     }
 
