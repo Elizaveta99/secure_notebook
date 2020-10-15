@@ -25,10 +25,11 @@ public class ServerController {
 
     //http://localhost:8080/server/openSession?rsaE=7&rsaN=3
     @GetMapping("/openSession")
-    public void getOpenRsaKey (@RequestParam(value = "rsaE") String rsaE,
+    public BaseResponse getOpenRsaKey (@RequestParam(value = "rsaE") String rsaE,
                                @RequestParam(value = "rsaN") String rsaN) {
         cipherInfoService.setRsaE(Integer.parseInt(rsaE));
         cipherInfoService.setRsaN(Integer.parseInt(rsaN));
+        return new BaseResponse(SUCCESS_STATUS, CODE_SUCCESS, "Session opened");
     }
 
     //http://localhost:8080/server/createSessionKey
