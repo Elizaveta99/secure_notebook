@@ -7,6 +7,7 @@ import service.CipherInfoService;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 
 @RestController
 @RequestMapping("/server")
@@ -27,8 +28,8 @@ public class ServerController {
     @GetMapping("/openSession")
     public BaseResponse getOpenRsaKey (@RequestParam(value = "rsaE") String rsaE,
                                @RequestParam(value = "rsaN") String rsaN) {
-        cipherInfoService.setRsaE(Integer.parseInt(rsaE));
-        cipherInfoService.setRsaN(Integer.parseInt(rsaN));
+        cipherInfoService.setRsaE(new BigInteger(rsaE));
+        cipherInfoService.setRsaN(new BigInteger(rsaN));
         return new BaseResponse(SUCCESS_STATUS, CODE_SUCCESS, "Session opened");
     }
 
