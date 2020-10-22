@@ -8,6 +8,10 @@ import service.CipherInfoService;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/server")
@@ -21,6 +25,8 @@ public class ServerController {
     private static final int AUTH_FAILURE = 401;
     private static final int KEY_EXPIRED = 403;
 
+    private LocalDateTime keyCreatedTime;
+
     private CipherInfoService cipherInfoService = new CipherInfoService();
     private AESService aesService = new AESService();
 
@@ -30,7 +36,7 @@ public class ServerController {
                                @RequestParam(value = "rsaN") String rsaN) {
         cipherInfoService.setRsaE(new BigInteger(rsaE));
         cipherInfoService.setRsaN(new BigInteger(rsaN));
-        return new BaseResponse(SUCCESS_STATUS, CODE_SUCCESS, "Session opened");
+        return new BaseResponse(SUCCESS_STATUS, CODE_SUCCESS, new ArrayList<>(Collections.singleton("Session opened")));
     }
 
     //http://localhost:8080/server/createSessionKey
@@ -38,16 +44,21 @@ public class ServerController {
     @GetMapping(value = "/createSessionKey", produces = "application/json")
     public BaseResponse createSessionKey() throws UnsupportedEncodingException {
         cipherInfoService.createSessionKey();
-        return new BaseResponse(SUCCESS_STATUS, CODE_SUCCESS, cipherInfoService.getSessionKey());
+        keyCreatedTime = LocalDateTime.now();
+        return new BaseResponse(SUCCESS_STATUS, CODE_SUCCESS, new ArrayList<>(Collections.singleton(cipherInfoService.getEncryptedSessionKey().toString())));
     }
 
     //http://localhost:8080/server/file?name=testFile1.txt
     //answer - {"status":"success","code":200,"content":"��-\u000F$�������v�x~��������\u0014\u0017�\fA�\u0016"}
     @GetMapping(value = "/file", produces = "application/json")
     public BaseResponse encryptFile(@RequestParam(value = "name") String fileName) throws IOException {
+        if (LocalDateTime.now().minusSeconds(expirationTme).isAfter(keyCreatedTime)) {
+            return new BaseResponse(ERROR_STATUS, KEY_EXPIRED, new ArrayList<>(Collections.singleton("")));
+        }
+
         String encryptedFile = "";
         encryptedFile = aesService.cipherAES(fileName, cipherInfoService.getEncryptedSessionKey());
-        return new BaseResponse(SUCCESS_STATUS, CODE_SUCCESS, encryptedFile);
+        return new BaseResponse(SUCCESS_STATUS, CODE_SUCCESS, new ArrayList<>(Arrays.asList(encryptedFile, aesService.getInitialVectorString())));
     }
 
 }

@@ -4,6 +4,9 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class AESService {
 
@@ -39,6 +42,16 @@ public class AESService {
     private final int Nk = 4; // KEY_LENGTH (IN 8-BYTE WORDS)
     private final int Nr = 10; // ROUNDS_CNT
     private String KEY;
+    private byte[] initialVector;
+    private String initialVectorString;
+
+    public byte[] getInitialVector() {
+        return initialVector;
+    }
+
+    public String getInitialVectorString() {
+        return initialVectorString;
+    }
 
     public String cipherAES(String fileName, String key) throws IOException {
         KEY = key;
@@ -56,8 +69,15 @@ public class AESService {
         }
 
         int cntBlocks = fileContent.length / 16;
-        String initialVector = "0000000000000000";   // for CFB
-        byte[] inputBytes = initialVector.getBytes("UTF-8");
+        // for CFB
+        Random random = ThreadLocalRandom.current();
+        initialVector = new byte[16];
+        random.nextBytes(initialVector);
+
+        initialVectorString = Arrays.toString(initialVector);
+
+        byte[] inputBytes = initialVector;
+
         int block = 0;
         while (block < cntBlocks) {
             int[] tempResult = algorithmAES(inputBytes);

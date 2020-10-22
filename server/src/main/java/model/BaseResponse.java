@@ -1,11 +1,13 @@
 package model;
 
+import java.util.ArrayList;
+
 public class BaseResponse {
     private final String status;
     private final Integer code;
-    private final String content;
+    private final ArrayList<String> content;
 
-    public BaseResponse(String status, Integer code, String content) {
+    public BaseResponse(String status, Integer code, ArrayList<String> content) {
         this.status = status;
         this.code = code;
         this.content = content;
@@ -19,7 +21,7 @@ public class BaseResponse {
         return code;
     }
 
-    public String getContent() {
+    public ArrayList<String> getContent() {
         return content;
     }
 }
