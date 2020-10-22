@@ -1,12 +1,7 @@
 package service;
 
-
-import org.apache.tomcat.util.codec.binary.Base64;
-
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -45,12 +40,8 @@ public class CipherInfoService {
         Random random = ThreadLocalRandom.current();
         encryptedSessionKeyBytes = new byte[16];
         random.nextBytes(encryptedSessionKeyBytes);
-        System.out.println("first bytes");
-        for (int i = 0; i < encryptedSessionKeyBytes.length; i++)
-            System.out.println(encryptedSessionKeyBytes[i]);
 
         sessionKey = bytesToString(encryptedSessionKeyBytes);
-        System.out.println("ses = " + sessionKey);
 
         encryptedSessionKeyBytes = encrypt(encryptedSessionKeyBytes);
         encryptedSessionKey = bytesToString(encryptedSessionKeyBytes);
