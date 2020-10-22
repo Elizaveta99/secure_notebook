@@ -60,12 +60,7 @@ public class CipherInfoService {
 
     public byte[] encrypt(byte[] message)
     {
-        byte[] ans = new byte[16];
-        for (int i = 0; i < message.length; i++) {
-            ans[i] = Byte.parseByte((new BigInteger(String.valueOf(message[i]))).modPow(rsaE, rsaN).toString());
-        }
-        return ans;
-        //return (new BigInteger(message)).modPow(rsaE, rsaN).toByteArray();
+        return (new BigInteger(message)).modPow(rsaE, rsaN).toByteArray();
     }
 
     public String getSessionKey() {
