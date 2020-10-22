@@ -6,3 +6,10 @@
         </div>
     </div>
 </template>
+
+<script>
+export default {
+  name: "FileView",
+  props: ['filename', 'text'],
+}
+</script>

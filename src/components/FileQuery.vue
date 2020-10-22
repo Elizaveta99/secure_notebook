@@ -12,10 +12,10 @@
 
 <script>
     export default {
-        name: "FileQuery",
+        name: 'FileQuery',
         data() {
             return {
-                filename: "",
+                filename: 'testFile1.txt',
             }
         },
         methods: {
@@ -24,11 +24,16 @@
                 console.log("onSubmit", this.filename)
                 this.filename = this.filename.trim()
                 if (this.filename) {
-                    // fetch(this.$hostname + "/file?name=" + this.filename)
-                    //     .then(data => data.json())
-                    //     .then(json => this.$emit("encodeText", filename, json.initializedVector, json.encodeT))
-                    const initializedVector = ''
-                    this.$emit("encodeText", this.filename, initializedVector, "CLMNzDdoV+7k0ndBq+ILlzHMBRy3AJ4TlhVzA1R3Rf17qNuoQ7atKCtzkhp6gNKs3VhoFyDgGA+gdwtqmhZXm8SiaKDM46QaOrOjp8/UC85O9snCZ+zpSbeM/OqqpSgh+q3AMe5gMLdth9iGUJra49cGTeK6FIzT4zLtWussySGO60+7i9yjr5UDs5bdGFyAwZSwDCC/89U6dOhVakyaEEoQZ+c9Z76Hu7kzoPCp+eEQ1PijWNB4+i8klpoHldi11qSjkIAg6FucXcxnR7lz6j0OHu5acFilxO6bNAQ=")
+                    fetch(this.$hostname + "/server/file?name=" + this.filename)
+                        .then(data => data.json())
+                        .then(json => {
+                          if (json['status'] === 'error') {
+                           this.$emit('reload')
+                          }
+                              this.$emit('encodeText', this.filename, json['content'][0], json['content'][1])
+                        })
+                    //const initializedVector = ''
+                    //this.$emit("encodeText", this.filename, initializedVector, "CLMNzDdoV+7k0ndBq+ILlzHMBRy3AJ4TlhVzA1R3Rf17qNuoQ7atKCtzkhp6gNKs3VhoFyDgGA+gdwtqmhZXm8SiaKDM46QaOrOjp8/UC85O9snCZ+zpSbeM/OqqpSgh+q3AMe5gMLdth9iGUJra49cGTeK6FIzT4zLtWussySGO60+7i9yjr5UDs5bdGFyAwZSwDCC/89U6dOhVakyaEEoQZ+c9Z76Hu7kzoPCp+eEQ1PijWNB4+i8klpoHldi11qSjkIAg6FucXcxnR7lz6j0OHu5acFilxO6bNAQ=")
                 }
             }
         }
