@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/server")
 public class ServerController {
 
