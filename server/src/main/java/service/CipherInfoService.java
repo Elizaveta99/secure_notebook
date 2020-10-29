@@ -41,6 +41,10 @@ public class CipherInfoService {
         encryptedSessionKeyBytes = new byte[16];
         random.nextBytes(encryptedSessionKeyBytes);
 
+        int enc[] = new int[16];
+        for (int i = 0; i < 16; i++)
+            enc[i] = encryptedSessionKeyBytes[i];
+
         sessionKey = bytesToString(encryptedSessionKeyBytes);
 
         encryptedSessionKeyBytes = encrypt(encryptedSessionKeyBytes);
