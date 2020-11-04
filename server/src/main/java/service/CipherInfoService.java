@@ -7,7 +7,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class CipherInfoService {
 
-    private static final char[] ALPHABET = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0'};
     private static final int KEY_LENGTH = 16;
 
     private BigInteger rsaE = new BigInteger(String.valueOf(65537));
@@ -16,6 +15,7 @@ public class CipherInfoService {
     private String encryptedSessionKey = "defaultkey000000";
     private BigInteger encryptedSessionKeyNumber;
     private byte[] encryptedSessionKeyBytes;
+    private static byte[] sessionKeyBytes;
 
     public BigInteger getRsaE() {
         return rsaE;
@@ -33,33 +33,20 @@ public class CipherInfoService {
         this.rsaN = rsaEN;
     }
 
+    public static byte[] getSessionKeyBytes() {
+        return sessionKeyBytes;
+    }
+
     public void createSessionKey() throws UnsupportedEncodingException {
         encryptedSessionKey = "";
         sessionKey = "";
 
         Random random = ThreadLocalRandom.current();
-        encryptedSessionKeyBytes = new byte[16];
-        random.nextBytes(encryptedSessionKeyBytes);
+        sessionKeyBytes = new byte[16];
+        random.nextBytes(sessionKeyBytes);
 
-        int enc[] = new int[16];
-        for (int i = 0; i < 16; i++)
-            enc[i] = encryptedSessionKeyBytes[i];
-
-        sessionKey = bytesToString(encryptedSessionKeyBytes);
-
-        encryptedSessionKeyBytes = encrypt(encryptedSessionKeyBytes);
-        encryptedSessionKey = bytesToString(encryptedSessionKeyBytes);
-    }
-
-    private static String bytesToString(byte[] encrypted)
-    {
-        String test = "";
-        for (byte b : encrypted)
-        {
-            //test += Byte.toString(b);
-            test += (char)(int)(b);
-        }
-        return test;
+        encryptedSessionKeyBytes = encrypt(sessionKeyBytes);
+        encryptedSessionKey = new String(encryptedSessionKeyBytes, "UTF-16");
     }
 
     public byte[] encrypt(byte[] message)

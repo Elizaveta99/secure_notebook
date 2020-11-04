@@ -41,7 +41,7 @@ public class ServerController {
     }
 
     //http://localhost:8080/server/createSessionKey
-    //answer - {"status":"success","code":200,"content":"L9DOBLZ8M739T3C1"}
+    //answer - {"status":"success","code":200,"content":""}
     @GetMapping(value = "/createSessionKey", produces = "application/json")
     public BaseResponse createSessionKey() throws UnsupportedEncodingException {
         cipherInfoService.createSessionKey();
@@ -50,7 +50,7 @@ public class ServerController {
     }
 
     //http://localhost:8080/server/file?name=testFile1.txt
-    //answer - {"status":"success","code":200,"content":"��-\u000F$�������v�x~��������\u0014\u0017�\fA�\u0016"}
+    //answer - {"status":"success","code":200,"content":""}
     @GetMapping(value = "/file", produces = "application/json")
     public BaseResponse encryptFile(@RequestParam(value = "name") String fileName) throws IOException {
         if (LocalDateTime.now().minusSeconds(expirationTme).isAfter(keyCreatedTime)) {
@@ -58,7 +58,7 @@ public class ServerController {
         }
 
         String encryptedFile = "";
-        encryptedFile = aesService.cipherAES(fileName, cipherInfoService.getEncryptedSessionKey());
+        encryptedFile = aesService.cipherAES(fileName, cipherInfoService.getSessionKey());
         return new BaseResponse(SUCCESS_STATUS, CODE_SUCCESS, new ArrayList<>(Arrays.asList(encryptedFile, aesService.getInitialVectorString())));
     }
 

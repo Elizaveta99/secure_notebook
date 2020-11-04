@@ -36,16 +36,17 @@ public class AESService {
             {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
     };
 
-    private final int KEY_LENGTH = CipherInfoService.getKeyLength();
+    private final int KEY_LENGTH = 16;
     private final int ROWS_CNT = 4;
     private final int Nb = 4; // COLS_CNT
     private final int Nk = 4; // KEY_LENGTH (IN 8-BYTE WORDS)
     private final int Nr = 10; // ROUNDS_CNT
     private String KEY;
-    private byte[] initialVector;
+    private int[] initialVector;
     private String initialVectorString;
+    private int LENGTH = 16;
 
-    public byte[] getInitialVector() {
+    public int[] getInitialVector() {
         return initialVector;
     }
 
@@ -56,10 +57,11 @@ public class AESService {
     public String cipherAES(String fileName, String key) throws IOException {
         KEY = key;
         String cipherFile = "";
-        byte[] firstFileContent = readFromFile(fileName);
-        byte[] fileContent;
-        if (firstFileContent.length % 16 != 0) {
-            fileContent = new byte[((firstFileContent.length / 16) + 1) * 16];
+        int[] firstFileContent = readFromFile(fileName);
+
+        int[] fileContent;
+        if (firstFileContent.length % LENGTH != 0) {
+            fileContent = new int[((firstFileContent.length / LENGTH) + 1) * LENGTH];
             for (int i = 0; i < firstFileContent.length; i++)
                 fileContent[i] = firstFileContent[i];
             for (int i = firstFileContent.length; i < fileContent.length; i++)
@@ -68,36 +70,46 @@ public class AESService {
             fileContent = firstFileContent;
         }
 
-        int cntBlocks = fileContent.length / 16;
+        int cntBlocks = fileContent.length / LENGTH;
+
         // for CFB
         Random random = ThreadLocalRandom.current();
-        initialVector = new byte[16];
-        random.nextBytes(initialVector);
+        initialVector = new int[LENGTH];
+        byte[] tempInitialVector = new byte[LENGTH];
+        random.nextBytes(tempInitialVector);
+        for (int i = 0; i < LENGTH; i++)
+            initialVector[i] = unsignedToBytes(tempInitialVector[i]);
 
         initialVectorString = Arrays.toString(initialVector);
 
-        byte[] inputBytes = initialVector;
+        int[] inputBytes = initialVector;
 
         int block = 0;
         while (block < cntBlocks) {
             int[] tempResult = algorithmAES(inputBytes);
-            byte[] plainTextBytes = new byte[16];
-            byte[] cipherTextBytes = new byte[16];
-            for (int i = 0; i < 16; i++) {
-                plainTextBytes[i] = fileContent[(block * 16) + i];
-                cipherTextBytes[i] = (byte) (plainTextBytes[i] ^ tempResult[i]);
+            int[] plainTextBytes = new int[LENGTH];
+            int[] cipherTextBytes = new int[LENGTH];
+            for (int i = 0; i < LENGTH; i++) {
+                plainTextBytes[i] = fileContent[(block * LENGTH) + i];
+                cipherTextBytes[i] = (plainTextBytes[i] ^ tempResult[i]);
             }
             inputBytes = cipherTextBytes;
             block++;
 
-            String cipherText = new String(cipherTextBytes, "UTF-8");
+            byte[] cipherFromIntToBytes = new byte[cipherTextBytes.length];
+            for (int i = 0; i < cipherTextBytes.length; i++) {
+                Integer tempI = cipherTextBytes[i];
+                cipherFromIntToBytes[i] = tempI.byteValue();
+            }
+
+            String cipherText = new String(cipherFromIntToBytes, "UTF-16");
             cipherFile += cipherText;
         }
 
         return cipherFile;
     }
 
-    private int[] algorithmAES(byte[] input) {
+    private int[] algorithmAES(int[] input) {
 
         int[][] state = new int[ROWS_CNT][Nb];
         for (int i = 0; i < ROWS_CNT; i++) {
@@ -138,7 +150,8 @@ public class AESService {
     private int[][] keyExpansion(String key) {
         int[] keySymbols = new int[KEY_LENGTH];
         for (int i = 0; i < KEY_LENGTH; i++) {
-            keySymbols[i] = key.charAt(i);
+            //keySymbols[i] = key.charAt(i);
+            keySymbols[i] = unsignedToBytes(CipherInfoService.getSessionKeyBytes()[i]);
         }
 
         int[][] keySchedule = new int[4][Nb * (Nr + 1)];
@@ -158,15 +171,18 @@ public class AESService {
                 tmp[3] = keySchedule[0][col - 1];
 
                 for (int j = 0; j < 4; j++) {
-                    String s_row = Integer.toUnsignedString(tmp[j] / 16);
+                    //String s_row = Integer.toUnsignedString(tmp[j] / LENGTH);
+                    String s_row = Integer.toString(tmp[j] / LENGTH);
                     int s_row_i = Integer.parseInt(s_row);
-                    int temp_col = tmp[j] % 16;
+                    int temp_col = tmp[j] % LENGTH;
                     if (temp_col == 0) {
-                        temp_col = 16;
+                        temp_col = LENGTH;
                     }
-                    String s_col = Integer.toUnsignedString(temp_col - 1);
+                    //String s_col = Integer.toUnsignedString(temp_col - 1);
+                    String s_col = Integer.toString(temp_col - 1);
                     int s_col_i = Integer.parseInt(s_col);
-                    tmp[j] = unsignedToBytes(SBOX[(16 * s_row_i) + s_col_i]);
+                    tmp[j] = unsignedToBytes(SBOX[(LENGTH * s_row_i) + s_col_i]);
+                    //tmp[j] = (SBOX[(LENGTH * s_row_i) + s_col_i]);
                 }
 
                 for (int i = 0; i < 4; i++) {
@@ -177,6 +193,7 @@ public class AESService {
             else {
                 for (int i = 0; i < 4; i++) {
                     int s = unsignedToBytes(keySchedule[i][col - 4] ^ keySchedule[i][col - 1]);
+                    //int s = (keySchedule[i][col - 4] ^ keySchedule[i][col - 1]);
                     keySchedule[i][col] = s;
                 }
             }
@@ -195,6 +212,11 @@ public class AESService {
             state[1][j] = unsignedToBytes(s1);
             state[2][j] = unsignedToBytes(s2);
             state[3][j] = unsignedToBytes(s3);
+
+//            state[0][j] = (s0);
+//            state[1][j] = (s1);
+//            state[2][j] = (s2);
+//            state[3][j] = (s3);
         }
         return state;
     }
@@ -202,13 +224,14 @@ public class AESService {
     private int[][] subBytes(int[][] state) {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                int row = state[i][j] / 16;
-                int temp_col = state[i][j] % 16;
+                int row = state[i][j] / LENGTH;
+                int temp_col = state[i][j] % LENGTH;
                 if (temp_col == 0) {
-                    temp_col = 16;
+                    temp_col = LENGTH;
                 }
                 int col = temp_col - 1;
-                state[i][j] = unsignedToBytes(SBOX[(16 * row) + col]);
+                state[i][j] = unsignedToBytes(SBOX[(LENGTH * row) + col]);
+                //state[i][j] = (SBOX[(LENGTH * row) + col]);
             }
         }
 
@@ -236,16 +259,24 @@ public class AESService {
             state[1][i] = unsignedToBytes(s1);
             state[2][i] = unsignedToBytes(s2);
             state[3][i] = unsignedToBytes(s3);
+
+//            state[0][i] = (s0);
+//            state[1][i] = (s1);
+//            state[2][i] = (s2);
+//            state[3][i] = (s3);
         }
 
         return state;
     }
 
-    private byte[] readFromFile(String fileName) throws IOException {
+    private int[] readFromFile(String fileName) throws IOException {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream inputStream = classLoader.getResourceAsStream(fileName);
         byte[] fileContent = IOUtils.toByteArray(inputStream);
-        return fileContent;
+        int[] ansFileContent = new int[fileContent.length];
+        for (int i = 0; i < fileContent.length; i++)
+            ansFileContent[i] = unsignedToBytes(fileContent[i]);
+        return ansFileContent;
     }
 
     private int[] leftShift(int [] array, int count) {
